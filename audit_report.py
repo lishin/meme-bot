@@ -1,7 +1,7 @@
 import json
 import time
 
-START_TS = 1788768868 # Clean baseline starting Sept 7 08:14 UTC
+START_TS = 1788941144 # Clean baseline starting Sept 9 08:05 UTC (Barker Pool Anomaly & Optimized TP/SL)
 
 PRICES = {"ETH": 2500.0, "BNB": 580.0, "SOL": 140.0}
 
@@ -14,7 +14,7 @@ def generate_audit():
 
     report = []
     report.append("# 4-Chain Memecoin Performance & Audit Report (Clean Slate - $25/Trade)\n")
-    report.append(f"**Session Start**: 2026-09-07 08:14:00 UTC | **Current Time**: {time.strftime('%Y-%m-%d %H:%M:%S UTC', time.gmtime())}\n")
+    report.append(f"**Session Start**: 2026-09-09 08:05:44 UTC | **Current Time**: {time.strftime('%Y-%m-%d %H:%M:%S UTC', time.gmtime())}\n")
     report.append(f"**当前纯净样本数**: {len(pos_list)} 笔 (单笔仓位: ~$25 USD)\n")
 
     report.append("## 一、 🚀 4 链实时表现审计表 (Clean Performance from Now)\n")
