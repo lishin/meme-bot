@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+*.log
+positions_archive_*.json
+positions_backup_*.json
