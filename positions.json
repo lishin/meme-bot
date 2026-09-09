@@ -2872,11 +2872,11 @@
     "entry_amount": 0.043,
     "unit": "BNB",
     "entry_val": 22176.1665,
-    "highest_val": 22176.1665,
-    "status": "OPEN",
-    "exit_time": null,
-    "exit_reason": null,
-    "pnl_pct": 0.0,
+    "highest_val": 27038.9916,
+    "status": "CLOSED",
+    "exit_time": 1788924204,
+    "exit_reason": "BREAKEVEN_PROTECT (Peak reached +21.9%, secured profit floor at +-12.6%)",
+    "pnl_pct": -12.61,
     "gas_cost_usd": 0.18
   }
 ]
