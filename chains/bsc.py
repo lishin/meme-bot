@@ -42,13 +42,15 @@ class BSCWorker:
                 if any(b in name.lower() for b in config.BANNED_KEYWORDS):
                     continue
 
-                # Line B: Liquidity & Velocity Breakout Filter
+                # Line B: Liquidity & Velocity Breakout Filter (Barker-style Pool Influx / 池子异动)
                 liq_usd = float(p["attributes"].get("reserve_in_usd") or 0.0)
                 txns_h1 = p["attributes"].get("transactions", {}).get("h1") or {}
                 txns_m5 = p["attributes"].get("transactions", {}).get("m5") or {}
                 buys_h1 = txns_h1.get("buys", 0)
                 buys_m5 = txns_m5.get("buys", 0)
+                sells_m5 = txns_m5.get("sells", 0)
                 vol_m5 = float(p["attributes"].get("volume_usd", {}).get("m5") or 0.0)
+                price_chg_m5 = float(p["attributes"].get("price_change_percentage", {}).get("m5") or 0.0)
 
                 # 1. Sweet-Spot Liquidity Cap ($15k <= Liq <= $65k) - prevents dead zombie whales & ultra-illiquid rugs
                 if liq_usd < config.BSC_MIN_LIQ_USD or liq_usd > config.BSC_MAX_LIQ_USD:
@@ -61,6 +63,15 @@ class BSCWorker:
                 # 3. 5-Minute Fresh Momentum Breakout Filter: Require immediate active buy velocity
                 if buys_m5 < config.BSC_MIN_BUYS_M5 or vol_m5 < config.BSC_MIN_VOL_M5:
                     logger.debug(f"[BSC Reject Cold] {name}: m5 buys={buys_m5} (<{config.BSC_MIN_BUYS_M5}), vol_m5=${vol_m5:.0f}")
+                    continue
+
+                # 4. Barker-Style Pool Anomaly: Buy Dominance Ratio (Buys >= 1.6x Sells) & Positive Momentum
+                if sells_m5 > 0 and (buys_m5 / sells_m5) < config.BSC_MIN_BUY_SELL_RATIO_M5:
+                    logger.debug(f"[BSC Reject Sell Pressure] {name}: buys_m5={buys_m5}, sells_m5={sells_m5} (Ratio < {config.BSC_MIN_BUY_SELL_RATIO_M5})")
+                    continue
+
+                if price_chg_m5 < config.BSC_MIN_PRICE_CHANGE_M5:
+                    logger.debug(f"[BSC Reject Bleed] {name}: m5 price change {price_chg_m5:+.1f}% (< +{config.BSC_MIN_PRICE_CHANGE_M5}%)")
                     continue
 
                 # Anti-Rug & Transaction Health Checks (Require >= 6 unique buyers and >= 2 real sells)

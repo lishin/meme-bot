@@ -48,13 +48,25 @@ class SolanaWorker:
                     logger.warning(f"[SOL Anti-Rug] Rejected {name}: Banned DEX/Internal Curve ({dex_id})")
                     continue
 
-                # Line B: Liquidity & Activity Filter
+                # Line B: Liquidity & Velocity Breakout Filter (Barker-style Pool Influx / 池子异动)
                 liq_usd = float(p["attributes"].get("reserve_in_usd") or 0.0)
-                txns = p["attributes"].get("transactions", {}).get("h1") or p["attributes"].get("transactions", {}).get("m5") or {}
-                buys = txns.get("buys", 0)
+                txns_h1 = p["attributes"].get("transactions", {}).get("h1") or {}
+                txns_m5 = p["attributes"].get("transactions", {}).get("m5") or {}
+                buys_h1 = txns_h1.get("buys", 0)
+                buys_m5 = txns_m5.get("buys", 0)
+                sells_m5 = txns_m5.get("sells", 0)
+                vol_m5 = float(p["attributes"].get("volume_usd", {}).get("m5") or 0.0)
+                price_chg_m5 = float(p["attributes"].get("price_change_percentage", {}).get("m5") or 0.0)
 
-                if liq_usd < config.SOL_MIN_LIQ_USD or buys < config.SOL_MIN_BUYS:
-                    # Reject zero-volume ghost pools
+                if liq_usd < config.SOL_MIN_LIQ_USD or buys_h1 < config.SOL_MIN_BUYS:
+                    continue
+
+                # 5-Minute Velocity Breakout: Active buying volume & positive momentum
+                if buys_m5 < 10 or vol_m5 < 5000.0 or price_chg_m5 < 3.0:
+                    continue
+
+                # Barker-style Buy Dominance (Buys >= 1.6x Sells)
+                if sells_m5 > 0 and (buys_m5 / sells_m5) < 1.6:
                     continue
 
                 # Anti-Rug & Transaction Health Checks (Require >= 12 unique buyers and >= 3 real sells)

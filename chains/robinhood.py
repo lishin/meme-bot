@@ -88,17 +88,19 @@ class RobinhoodWorker:
                         continue
 
                     # Add to dynamic watchlist to monitor organic bonding curve momentum
+                    init_res, _, _ = self.check_curve(curve)
                     self.watchlist[token] = {
                         "curve": curve,
                         "deployer": deployer,
                         "symbol": sym,
-                        "created_at": now
+                        "created_at": now,
+                        "initial_res": init_res if init_res > 0 else config.RH_BASELINE_VIRTUAL_ETH
                     }
-                    logger.info(f"[RH Watchlist] Added {sym} ({token[:10]}...) to active radar")
+                    logger.info(f"[RH Watchlist] Added {sym} ({token[:10]}...) to active radar (Base: {init_res:.3f} ETH)")
 
                 self.last_scanned_block = to_block
 
-            # Poll active watchlist curves for organic breakout (1.68 ETH -> >= 2.10 ETH)
+            # Poll active watchlist curves for organic breakout (Barker-style Pool Influx / 池子异动)
             now = time.time()
             watchlist_items = list(self.watchlist.items())
             for token, info in watchlist_items:
@@ -117,14 +119,18 @@ class RobinhoodWorker:
                     del self.watchlist[token]
                     continue
 
-                if res_eth >= config.RH_MIN_RESERVE_ETH:
+                init_res = info.get("initial_res", config.RH_BASELINE_VIRTUAL_ETH)
+                delta_influx = res_eth - init_res
+
+                # Barker-style Pool Influx: Reserve >= threshold AND actively surging (+delta ETH influx)
+                if res_eth >= config.RH_MIN_RESERVE_ETH and delta_influx >= config.RH_MIN_DELTA_ETH:
                     # Breakout threshold reached! Check open position limit
                     if self.pos_manager.get_open_count("robinhood") >= config.MAX_POSITIONS_PER_CHAIN:
                         # Waiting for slot
                         continue
 
                     real_buy_eth = res_eth - config.RH_BASELINE_VIRTUAL_ETH
-                    logger.info(f"[RH Line B WIN] Watchlist breakout triggered: {sym} (Real Buys: +{real_buy_eth:.3f} ETH, Reserve: {res_eth:.3f} ETH)")
+                    logger.info(f"[RH Line B WIN] Barker-Style Pool Influx: {sym} (Surge: +{delta_influx:.3f} ETH, Total Buys: +{real_buy_eth:.3f} ETH, Reserve: {res_eth:.3f} ETH)")
                     self.pos_manager.add_position(
                         chain="robinhood",
                         token=token,
