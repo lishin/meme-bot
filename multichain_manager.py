@@ -163,7 +163,8 @@ class MultiChainPositionManager:
                 exit_reason = f"MAX_TIME_HORIZON_EXIT (Held 90m with PnL {gain_pct:+.1f}%)"
 
             if should_exit:
-                if not config.DRY_RUN and chain == "arc":
+                is_arc_dry = getattr(config, "ARC_DRY_RUN", config.DRY_RUN)
+                if not is_arc_dry and chain == "arc":
                     try:
                         from chains.arc import ArcTrader
                         trader = ArcTrader()

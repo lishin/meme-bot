@@ -67,3 +67,6 @@ ARC_ROUTER_ADDRESS = "0x53bf6b0684ec7ef91e1387da3d1a1769bc5a6f77"
 ARC_USDC_ADDRESS = "0x3600000000000000000000000000000000000000"
 ARC_MIN_LIQ_USD = float(os.getenv("ARC_MIN_LIQ_USD", "1000.0")) # Require at least $1,000 seeded liquidity
 ARC_SLIPPAGE_PCT = float(os.getenv("ARC_SLIPPAGE_PCT", "15.0"))
+ARC_PRIVATE_KEY = os.getenv("ARC_PRIVATE_KEY", "").strip() or PRIVATE_KEY
+ARC_DRY_RUN = os.getenv("ARC_DRY_RUN", str(DRY_RUN)).lower() in ("true", "1", "yes")
+

@@ -18,18 +18,22 @@ class ArcTrader:
         self.router_contract = self.w3.eth.contract(address=self.router_address, abi=SWAP_ROUTER_ABI)
         self.usdc_contract = self.w3.eth.contract(address=self.usdc_address, abi=ERC20_ABI)
 
-        if config.PRIVATE_KEY:
+        pk = getattr(config, "ARC_PRIVATE_KEY", None) or config.PRIVATE_KEY
+        if pk:
             try:
-                pk = config.PRIVATE_KEY
                 if not pk.startswith("0x"):
                     pk = "0x" + pk
                 self.account = Account.from_key(pk)
                 self.wallet_address = self.account.address
-                logger.info(f"[Arc Live Trader] Wallet initialized: {self.wallet_address}")
+                logger.info(f"[Arc Live Trader] Dedicated Arc Wallet initialized: {self.wallet_address}")
             except Exception as e:
-                logger.error(f"[Arc Live Trader] Failed to load private key: {e}")
+                logger.error(f"[Arc Live Trader] Failed to load Arc private key: {e}")
         else:
-            logger.info("[Arc Live Trader] Running in SIMULATION / DRY_RUN mode (No private key set)")
+            logger.info("[Arc Live Trader] Running in SIMULATION / DRY_RUN mode (No Arc private key set)")
+
+    @property
+    def is_dry_run(self) -> bool:
+        return getattr(config, "ARC_DRY_RUN", config.DRY_RUN) or not self.account
 
     def get_usdc_balance(self) -> float:
         if not self.wallet_address:
@@ -42,7 +46,7 @@ class ArcTrader:
             return 0.0
 
     def ensure_usdc_approved(self, amount_units: int) -> bool:
-        if config.DRY_RUN or not self.account:
+        if self.is_dry_run:
             return True
         try:
             allowance = self.usdc_contract.functions.allowance(self.wallet_address, self.router_address).call()
@@ -66,7 +70,7 @@ class ArcTrader:
             return False
 
     def buy_token(self, token_address: str, fee_tier: int = 10000, usdc_amount: float = 25.0) -> dict:
-        if config.DRY_RUN or not self.account:
+        if self.is_dry_run:
             return {"success": True, "tx_hash": f"SIM_ARC_BUY_{int(time.time())}", "amount_in": usdc_amount}
         try:
             token_chk = self.w3.to_checksum_address(token_address)
@@ -109,7 +113,7 @@ class ArcTrader:
             return {"success": False, "error": str(e)}
 
     def sell_token(self, token_address: str, fee_tier: int = 10000) -> dict:
-        if config.DRY_RUN or not self.account:
+        if self.is_dry_run:
             return {"success": True, "tx_hash": f"SIM_ARC_SELL_{int(time.time())}"}
         try:
             token_chk = self.w3.to_checksum_address(token_address)
@@ -166,7 +170,7 @@ class ArcWorker:
 
     def initialize(self):
         logger.info(f"[Arc Chain] Active on Mainnet (Chain ID: {config.ARC_CHAIN_ID}, RPC: {config.ARC_RPC_URL})")
-        if not config.DRY_RUN and self.trader.wallet_address:
+        if not self.trader.is_dry_run and self.trader.wallet_address:
             bal = self.trader.get_usdc_balance()
             logger.info(f"[Arc Chain] Live Wallet Loaded: {self.trader.wallet_address} | USDC Balance: ${bal:.2f}")
         return True
