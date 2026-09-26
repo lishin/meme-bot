@@ -163,6 +163,15 @@ class MultiChainPositionManager:
                 exit_reason = f"MAX_TIME_HORIZON_EXIT (Held 90m with PnL {gain_pct:+.1f}%)"
 
             if should_exit:
+                if not config.DRY_RUN and chain == "arc":
+                    try:
+                        from chains.arc import ArcTrader
+                        trader = ArcTrader()
+                        res_sell = trader.sell_token(pos["token"])
+                        pos["sell_tx"] = res_sell.get("tx_hash")
+                    except Exception as err:
+                        logger.error(f"[Arc Live Sell Error] {symbol}: {err}")
+
                 pos["status"] = "CLOSED"
                 pos["exit_time"] = now
                 pos["exit_reason"] = exit_reason
