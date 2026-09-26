@@ -88,7 +88,6 @@ class ArcTrader:
                 token_chk,
                 fee_tier,
                 self.wallet_address,
-                int(time.time()) + 180,
                 amount_units,
                 0,
                 0
@@ -140,7 +139,6 @@ class ArcTrader:
                 self.usdc_address,
                 fee_tier,
                 self.wallet_address,
-                int(time.time()) + 180,
                 bal,
                 0,
                 0
@@ -203,6 +201,11 @@ class ArcWorker:
                 if pool_addr in self.known_pools:
                     continue
                 self.known_pools.add(pool_addr)
+
+                # Filter for Uniswap V3 pools compatible with SwapRouter02
+                dex_id = p.get("relationships", {}).get("dex", {}).get("data", {}).get("id", "")
+                if dex_id not in ("uniswap-v3-arc", "uniswap-v3"):
+                    continue
 
                 # Line A: Banned keywords
                 if any(b in name.lower() for b in config.BANNED_KEYWORDS):
