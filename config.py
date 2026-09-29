@@ -37,6 +37,8 @@ RH_MIN_DELTA_ETH = float(os.getenv("RH_MIN_DELTA_ETH", "0.10"))     # At least 0
 RH_MAX_RESERVE_ETH = float(os.getenv("RH_MAX_RESERVE_ETH", "2.75")) # Capped at 2.75 ETH
 RH_MAX_DEV_LAUNCHES = int(os.getenv("RH_MAX_DEV_LAUNCHES", "2"))
 RH_WATCHLIST_TIMEOUT_SEC = int(os.getenv("RH_WATCHLIST_TIMEOUT_SEC", "7200")) # 2 hours
+RH_PRIVATE_KEY = os.getenv("RH_PRIVATE_KEY", "").strip() or PRIVATE_KEY
+RH_DRY_RUN = os.getenv("RH_DRY_RUN", str(DRY_RUN)).lower() in ("true", "1", "yes")
 
 SOL_ALLOWED_DEXES = ["raydium", "raydium_clmm", "raydium_cpmm", "orca"]
 SOL_BANNED_DEXES = ["meteora", "meteora_damm", "meteora_dlmm", "pump_fun", "pumpswap"]
@@ -52,12 +54,16 @@ BSC_MIN_BUYS_M5 = int(os.getenv("BSC_MIN_BUYS_M5", "8"))            # Min 8 buys
 BSC_MIN_VOL_M5 = float(os.getenv("BSC_MIN_VOL_M5", "4000.0"))        # Min $4,000 volume in last 5m
 BSC_MIN_BUY_SELL_RATIO_M5 = float(os.getenv("BSC_MIN_BUY_SELL_RATIO_M5", "1.6")) # Buys >= 1.6x Sells
 BSC_MIN_PRICE_CHANGE_M5 = float(os.getenv("BSC_MIN_PRICE_CHANGE_M5", "3.0"))     # Positive price velocity (+3%)
+BSC_PRIVATE_KEY = os.getenv("BSC_PRIVATE_KEY", "").strip() or PRIVATE_KEY
+BSC_DRY_RUN = os.getenv("BSC_DRY_RUN", str(DRY_RUN)).lower() in ("true", "1", "yes")
 
 # 3. Solana Config (Enforce Strong Momentum: Min 35 Buys & $20k Liquidity)
 SOL_RPC_URL = os.getenv("SOL_RPC_URL", "https://api.mainnet-beta.solana.com")
 SOL_BUY_AMOUNT_SOL = float(os.getenv("SOL_BUY_AMOUNT_SOL", "0.18")) # $25 USD (@ $140/SOL)
 SOL_MIN_LIQ_USD = float(os.getenv("SOL_MIN_LIQ_USD", "20000.0")) # Raised to $20,000 USD
 SOL_MIN_BUYS = int(os.getenv("SOL_MIN_BUYS", "35"))              # Raised to 35 buys (filters dev pump spam)
+SOL_PRIVATE_KEY = os.getenv("SOL_PRIVATE_KEY", "").strip()
+SOL_DRY_RUN = os.getenv("SOL_DRY_RUN", str(DRY_RUN)).lower() in ("true", "1", "yes")
 
 # 4. Arc Chain Config (Mainnet Circle Layer-1)
 ARC_RPC_URL = os.getenv("ARC_RPC_URL", "https://rpc.mainnet.arc.io")
