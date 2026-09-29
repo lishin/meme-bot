@@ -71,7 +71,7 @@ class SolanaWorker:
 
                 # Anti-Rug & Transaction Health Checks (Require >= 12 unique buyers and >= 3 real sells)
                 from anti_rug import AntiRugDetector
-                ok_tx, reason_tx = AntiRugDetector.check_pool_transactions(txns, min_unique_buyers=12, min_sells=3)
+                ok_tx, reason_tx = AntiRugDetector.check_pool_transactions(txns_h1, min_unique_buyers=12, min_sells=3)
                 if not ok_tx:
                     logger.warning(f"[SOL Anti-Rug] Rejected {name}: {reason_tx}")
                     continue
@@ -80,6 +80,14 @@ class SolanaWorker:
                 ok_sec, reason_sec = AntiRugDetector.check_solana_token(base_token)
                 if not ok_sec:
                     logger.warning(f"[SOL Anti-Rug] Rejected {name}: {reason_sec}")
+                    continue
+
+                # Gate 4: Chart Risk Pattern Screening (VERTICAL_PLATEAU & SUSTAINED_COLLAPSE)
+                from meme_radar import MemeRadarEngine
+                candles = MemeRadarEngine.fetch_gecko_1m_candles("solana", pool_addr, limit=12)
+                ok_chart, reason_chart = MemeRadarEngine.evaluate_gate4_chart_risk(candles)
+                if not ok_chart:
+                    logger.warning(f"[SOL Chart Risk Reject] {name}: {reason_chart}")
                     continue
 
                 if self.pos_manager.get_open_count("solana") >= config.MAX_POSITIONS_PER_CHAIN:

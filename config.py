@@ -62,7 +62,7 @@ SOL_MIN_BUYS = int(os.getenv("SOL_MIN_BUYS", "35"))              # Raised to 35 
 # 4. Arc Chain Config (Mainnet Circle Layer-1)
 ARC_RPC_URL = os.getenv("ARC_RPC_URL", "https://rpc.mainnet.arc.io")
 ARC_CHAIN_ID = int(os.getenv("ARC_CHAIN_ID", "5042"))
-ARC_BUY_AMOUNT_USDC = float(os.getenv("ARC_BUY_AMOUNT_USDC", "25.0")) # $25 USDC
+ARC_BUY_AMOUNT_USDC = float(os.getenv("ARC_BUY_AMOUNT_USDC", "15.0")) # $15 USDC (optimized position sizing)
 ARC_ROUTER_ADDRESS = "0x53bf6b0684ec7ef91e1387da3d1a1769bc5a6f77"
 ARC_USDC_ADDRESS = "0x3600000000000000000000000000000000000000"
 ARC_MIN_LIQ_USD = float(os.getenv("ARC_MIN_LIQ_USD", "1000.0")) # Require at least $1,000 seeded liquidity

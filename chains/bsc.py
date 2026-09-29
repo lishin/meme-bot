@@ -93,6 +93,14 @@ class BSCWorker:
                     logger.warning(f"[BSC Anti-Rug] Rejected {name}: {reason_lp}")
                     continue
 
+                # Gate 4: Chart Risk Pattern Screening (VERTICAL_PLATEAU & SUSTAINED_COLLAPSE)
+                from meme_radar import MemeRadarEngine
+                candles = MemeRadarEngine.fetch_gecko_1m_candles("bsc", pool_addr, limit=12)
+                ok_chart, reason_chart = MemeRadarEngine.evaluate_gate4_chart_risk(candles)
+                if not ok_chart:
+                    logger.warning(f"[BSC Chart Risk Reject] {name}: {reason_chart}")
+                    continue
+
                 if self.pos_manager.get_open_count("bsc") >= config.MAX_POSITIONS_PER_CHAIN:
                     continue
                 logger.info(f"[BSC Line B WIN] Found breakout Meme Pool: {name} (Liq: ${liq_usd:,.0f}, m5 Buys: {buys_m5}, m5 Vol: ${vol_m5:,.0f})")

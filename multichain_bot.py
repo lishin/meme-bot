@@ -35,8 +35,8 @@ def main():
     logger.info(f"Rules: Trailing Stop (Active >= +{config.TRAILING_STOP_ACTIVATION}%, Callback {config.TRAILING_STOP_CALLBACK}%) | Hard TP: +{config.TAKE_PROFIT_PCT}% | SL: -{config.STOP_LOSS_PCT}%")
     logger.info(f"Robinhood Strategy: Min Reserve >= {config.RH_MIN_RESERVE_ETH} ETH (Real buys > 1.68 baseline) | Max Dev: {config.RH_MAX_DEV_LAUNCHES}")
     logger.info(f"BSC Strategy: Min Liq >= ${config.BSC_MIN_LIQ_USD:,.0f} | Min Buys: {config.BSC_MIN_BUYS}")
-    logger.info(f"Solana Strategy: Min Liq >= ${config.SOL_MIN_LIQ_USD:,.0f} | Min Buys: {config.SOL_MIN_BUYS}")
-    logger.info(f"Arc Strategy: Sentinel Active (Awaiting Sept 16 Mainnet Pools)")
+    logger.info(f"Arc Strategy: 5-Gate Meme Radar Active (Sweet Spot $20k-$80k, Momentum Vol >= $1.5k) | Size: ${config.ARC_BUY_AMOUNT_USDC:.0f} USDC")
+
 
     pos_manager = MultiChainPositionManager()
 

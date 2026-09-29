@@ -5,6 +5,8 @@ from web3 import Web3
 from eth_account import Account
 import config
 from abi import ARC_SWAP_ROUTER_ADDRESS, ARC_USDC_ADDRESS, SWAP_ROUTER_ABI, ERC20_ABI
+from meme_radar import MemeRadarEngine
+
 
 logger = logging.getLogger("ARC-Worker")
 
@@ -211,16 +213,20 @@ class ArcWorker:
                 if any(b in name.lower() for b in config.BANNED_KEYWORDS):
                     continue
 
-                # Line B: Ensure real liquidity is seeded (avoid $0 / $1 ghost creation)
-                liq_usd = float(p["attributes"].get("reserve_in_usd") or 0.0)
-                if liq_usd < config.ARC_MIN_LIQ_USD:
+                base_token = p["relationships"]["base_token"]["data"]["id"].replace("arc_", "")
+                fee_tier = self.parse_fee_tier(name)
+
+                # 5-Gate Meme Radar Filtering Pipeline
+                passed, reason = MemeRadarEngine.evaluate_full_pipeline("arc", p["attributes"], base_token, pool_addr)
+                if not passed:
+                    logger.debug(f"[Arc Radar Filter] {name}: {reason}")
                     continue
 
                 if self.pos_manager.get_open_count("arc") >= config.MAX_POSITIONS_PER_CHAIN:
                     continue
 
-                base_token = p["relationships"]["base_token"]["data"]["id"].replace("arc_", "")
-                fee_tier = self.parse_fee_tier(name)
+                liq_usd = float(p["attributes"].get("reserve_in_usd") or 0.0)
+                logger.info(f"[Arc Radar PASS] {name} | {reason}")
 
                 # Execute Buy (Live or Simulated)
                 res = self.trader.buy_token(base_token, fee_tier=fee_tier, usdc_amount=config.ARC_BUY_AMOUNT_USDC)
